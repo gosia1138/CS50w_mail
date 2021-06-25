@@ -11,7 +11,19 @@
     <a class="btn btn-sm btn-outline-primary" href="{% url 'logout' %}">Log Out</a>
     <hr>
 
+
     <div id="emails-view">
+    </div>
+
+    <div id="detail-view">
+        <p id='sender'></p>
+        <p id='recipients'></p>
+        <p id='subject'></p>
+        <p id='timestamp'></p>
+        <button class="btn btn-sm btn-outline-primary" id="reply">Reply</button>
+        <button class="btn btn-sm btn-outline-primary" id="archive">Archive</button>
+        <hr>
+        <div id='body'></div>
     </div>
 
     <div id="compose-view">
