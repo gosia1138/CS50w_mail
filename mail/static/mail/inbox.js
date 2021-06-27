@@ -80,19 +80,36 @@ function load_email(id, mailbox) {
         document.querySelector('#subject').innerHTML = 'Subject: '.bold() + `${email.subject}`;
         document.querySelector('#timestamp').innerHTML = 'Timestamp: '.bold() + `${email.timestamp}`;
         document.querySelector('#body').innerHTML = `${email.body}`;
-        mark_email(email.id, 'read')
-        if (email.archived === true) {
-            document.querySelector('#archive').innerHTML = 'Unarchive'
-        }
-        document.querySelector('#archive').addEventListener('click', function(){
-            if (email.archived === false) {
-                mark_email(email.id, 'archive')
-
-            } else {
-                mark_email(email.id, 'unarchive')
-            }
-            setTimeout(function() { load_mailbox('inbox'); }, 1000);
+        // Mark as read
+        fetch(`/emails/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify({
+                read: true
+            })
         });
+        //Change #archive button appropriatly
+        const archive_button = document.querySelector('#archive')
+        if (email.archived === true) {
+            archive_button.innerHTML = 'Unarchive'
+        } else {
+            archive_button.innerHTML = 'Archive'
+        }
+        // Archive/unarchive
+        archive_button.addEventListener('click', function(){
+            fetch(`/emails/${id}`, {
+                method: 'PUT',
+                body: JSON.stringify({
+                    archived: !email.archived
+                })
+            })
+            .then(response => {
+                if (response.ok) {
+                    setTimeout(function() { load_mailbox('inbox'); }, 200);
+                }
+            });
+
+        });
+        //Collect email content and pass it to compose function to make a reply
         document.querySelector('#reply').addEventListener('click', function(){
             var reply_email = {
                 'to': email.sender,
@@ -100,40 +117,11 @@ function load_email(id, mailbox) {
                 'body': email.body,
                 'timestamp': email.timestamp,
             }
-            compose_email(reply_email)
+            compose_email(reply_email);
         });
     });
 }
 
-function mark_email(id, action) {
-
-    //mark email as read
-    if (action === 'read') {
-        fetch(`/emails/${id}`, {
-            method: 'PUT',
-            body: JSON.stringify({
-                read: true
-            })
-        })
-    //mark email as archived
-    } else if (action === 'archive'){
-        fetch(`/emails/${id}`, {
-            method: 'PUT',
-            body: JSON.stringify({
-                archived: true
-            })
-        })` + '<br>' + `
-    }
-    //mark email as unarchived
-    else {
-        fetch(`/emails/${id}`, {
-            method: 'PUT',
-            body: JSON.stringify({
-                archived: false
-            })
-        })
-    }
-}
 
 function load_mailbox(mailbox) {
 
@@ -145,9 +133,9 @@ function load_mailbox(mailbox) {
 
   // Show the mailbox name
   const emails_view = document.querySelector('#emails-view')
-  emails_view.innerHTML = `<h3>${mailbox.charAt(0).toUpperCase() + mailbox.slice(1)}</h3>`;
+  document.querySelector('#emails-view').innerHTML = `<h3>${mailbox.charAt(0).toUpperCase() + mailbox.slice(1)}</h3>`;
 
-  // Fetch emails from appropriate mailbox and append them as li inside ul
+  // Fetch emails from appropriate mailbox and append them
   fetch(`/emails/${mailbox}`)
   .then(response => response.json())
   .then(emails => {
@@ -169,8 +157,7 @@ function load_mailbox(mailbox) {
              a.className = 'read';
          }
          emails_view.append(a);
-
       })
-
+      stop();
   })
 }
