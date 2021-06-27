@@ -95,18 +95,15 @@ function load_email(id, mailbox) {
             archive_button.innerHTML = 'Archive'
         }
         // Archive/unarchive
+        archiver = !email.archived;
         archive_button.addEventListener('click', function(){
             fetch(`/emails/${id}`, {
                 method: 'PUT',
                 body: JSON.stringify({
-                    archived: !email.archived
+                    archived: archiver
                 })
-            })
-            .then(response => {
-                if (response.ok) {
-                    setTimeout(function() { load_mailbox('inbox'); }, 200);
-                }
             });
+            setTimeout(function() { load_mailbox('inbox'); }, 200);
 
         });
         //Collect email content and pass it to compose function to make a reply
